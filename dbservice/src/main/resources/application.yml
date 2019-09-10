@@ -1,0 +1,19 @@
+server:
+  port: 8765
+
+db_host: localhost
+db_username: dbadmin
+db_password: Zaq123@!
+db_name: defaultdb
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${db_host}:5432/${db_name}
+    driver-class-name: org.postgresql.Driver
+    username: ${db_username}
+    password: ${db_password}
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+    show-sql: true

@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dbservice-config
+  labels:
+    app: dbservice
+data:
+  db_username: admin
+  db_name: kdemo
+  db_password: Zaq123@!
+  db_host: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dbservice
+  labels:
+    app: dbservice
+spec:
+  selector:
+    matchLabels:
+      app: dbservice
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: dbservice
+
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: dbservice
+          image: besanouno/kdemo-dbservice:1.0
+          ports:
+            - containerPort: 8765
+              name: dbservice
+          env:
+            - name: db_username
+              valueFrom:
+                configMapKeyRef:
+                  name: dbservice-config
+                  key: db_username
+            - name: db_name
+              valueFrom:
+                configMapKeyRef:
+                  name: dbservice-config
+                  key: db_name
+            - name: db_password
+              valueFrom:
+                configMapKeyRef:
+                  name: dbservice-config
+                  key: db_password
+            - name: db_host
+              valueFrom:
+                configMapKeyRef:
+                  name: dbservice-config
+                  key: db_host
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbservice
+  labels:
+    app: dbservice
+spec:
+  type: NodePort
+  ports:
+    - port: 8765
+  selector:
+    app: dbservice

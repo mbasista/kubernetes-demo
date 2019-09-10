@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  postgres:
+    container_name: "postgresdb"
+    ports: 
+      - "5432:5432"
+    image: postgres:9.6
+    networks:
+      - kdemo-net
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Zaq123@!
+      POSTGRES_DB: kdemo
+    volumes:
+      - /home/marcin/docker/volumes/postgres/kdemo:/var/lib/postgresql/data
+  dbservice:
+    container_name: "dbservice"
+    ports:
+      - "8765:8765"
+    image: besanouno/kdemo-dbservice:1.0
+    networks:
+      - kdemo-net
+    environment:
+      db_username: admin
+      db_name: kdemo
+      db_password: Zaq123@!
+      db_host: postgresdb
+  noteservice:
+    container_name: "noteservice"
+    ports:
+      - "8901:8901"
+    image: besanouno/kdemo-noteservice:1.0
+    networks:
+      - kdemo-net
+    environment:
+      dbservice_host: dbservice
+      dbservice_port: 8765
+networks:
+  kdemo-net:
+    external:
+      name: kdemo-net

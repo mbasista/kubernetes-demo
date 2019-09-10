@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: noteservice-config
+  labels:
+    app: noteservice
+data:
+  dbservice_host: dbservice
+  dbservice_port: "8765"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noteservice
+  labels:
+    app: noteservice
+spec:
+  selector:
+    matchLabels:
+      app: noteservice
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: noteservice
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: noteservice
+          image: besanouno/kdemo-noteservice:1.0
+          ports:
+            - containerPort: 8901
+              name: noteservice
+          env:
+            - name: dbservice_host
+              valueFrom:
+                configMapKeyRef:
+                  name: noteservice-config
+                  key: dbservice_host
+            - name: dbservice_port
+              valueFrom:
+                configMapKeyRef:
+                  name: noteservice-config
+                  key: dbservice_port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: noteservice
+  labels:
+    app: noteservice
+spec:
+  type: NodePort
+  ports:
+    - port: 8901
+  selector:
+    app: noteservice
