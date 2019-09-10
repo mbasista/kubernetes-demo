@@ -38,13 +38,27 @@ spec:
     requests:
       storage: 32Mi
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
   name: postgres
   labels:
     app: postgres
 spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  serviceName: "postgres"
   selector:
     matchLabels:
       app: postgres
@@ -82,16 +96,3 @@ spec:
           volumeMounts:
             - name: postgres-pv-storage
               mountPath: /var/lib/postgresql/data
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres
-  labels:
-    app: postgres
-spec:
-  type: ClusterIP
-  ports:
-    - port: 5432
-  selector:
-    app: postgres
