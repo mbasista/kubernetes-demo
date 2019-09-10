@@ -63,7 +63,7 @@ metadata:
   labels:
     app: dbservice
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 8765
   selector:
