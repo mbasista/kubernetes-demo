@@ -1,0 +1,11 @@
+application:
+  name: noteservice
+  port: 8901
+
+image: 
+  name: besanouno/kdemo-noteservice
+  tag: "1.0"
+
+deployment:
+  replicas: 3
+  restartPolicy: Always

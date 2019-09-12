@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Values.application.name }}-config
+  labels:
+    app: {{ $.Values.application.name }}
+data:
+  db_username: admin
+  db_name: kdemo
+  db_password: Zaq123@!
+  db_host: postgres

@@ -30,18 +30,10 @@ spec:
           image: besanouno/kdemo-noteservice:1.0
           ports:
             - containerPort: 8901
-              name: noteservice
-          env:
-            - name: dbservice_host
-              valueFrom:
-                configMapKeyRef:
-                  name: noteservice-config
-                  key: dbservice_host
-            - name: dbservice_port
-              valueFrom:
-                configMapKeyRef:
-                  name: noteservice-config
-                  key: dbservice_port
+              name: noteserviceport
+          envFrom:
+          - configMapRef:
+              name: noteservice-config
 ---
 apiVersion: v1
 kind: Service
@@ -53,5 +45,6 @@ spec:
   type: ClusterIP
   ports:
     - port: 8901
+      name: noteservice
   selector:
     app: noteservice

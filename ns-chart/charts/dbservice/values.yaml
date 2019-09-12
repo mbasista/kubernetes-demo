@@ -1,0 +1,11 @@
+application:
+  name: dbservice
+  port: 8765
+
+image: 
+  name: besanouno/kdemo-dbservice
+  tag: "1.0"
+
+deployment:
+  replicas: 3
+  restartPolicy: Always
