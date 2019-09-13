@@ -15,12 +15,12 @@ public class NoteController {
     }
 
     @GetMapping("/{id}")
-    public String readNote(@PathVariable("id") final Long id) {
-        return noteService.findJson(id);
+    public String readNote(@PathVariable("id") final String id) {
+        return noteService.findNote(id).getContent();
     }
 
     @PostMapping
-    public Long saveNote(@RequestBody final String content) {
-        return noteService.saveJson(content);
+    public String saveNote(@RequestBody final String content) {
+        return noteService.saveNote(content);
     }
 }

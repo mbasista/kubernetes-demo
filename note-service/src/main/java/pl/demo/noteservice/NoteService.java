@@ -2,10 +2,12 @@ package pl.demo.noteservice;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import pl.demo.noteservice.exception.ConcurrentModificationException;
+import pl.demo.noteservice.exception.NoteNotFoundException;
 import pl.demo.noteservice.generated.dbservice.wsdl.FindJsonRequest;
 import pl.demo.noteservice.generated.dbservice.wsdl.FindJsonResponse;
 import pl.demo.noteservice.generated.dbservice.wsdl.SaveJsonRequest;
-import pl.demo.noteservice.generated.dbservice.wsdl.SaveJsonResponse;
 
 @Service
 public class NoteService {
@@ -17,17 +19,41 @@ public class NoteService {
         this.dbServiceClient = dbServiceClient;
     }
 
-    public Long saveJson(String content) {
-        SaveJsonRequest rq = new SaveJsonRequest();
-        rq.setContent(content);
-        SaveJsonResponse rs = dbServiceClient.saveJson(rq);
-        return rs.getId();
+    public String saveNote(String content) {
+        String noteId = getNoteId(content);
+        try {
+            saveNote(noteId, content);
+        } catch (ConcurrentModificationException e) {
+            saveNote(noteId, content);
+        }
+        return noteId;
     }
 
-    public String findJson(Long id) {
+    private String getNoteId(String note) {
+        String id = note.split(" ")[0];
+        if (StringUtils.isEmpty(id)) {
+            throw new IllegalArgumentException("content is empty");
+        } else {
+            return id;
+        }
+    }
+
+    private void saveNote(String id, String content) {
+        SaveJsonRequest rq = new SaveJsonRequest();
+        rq.setId(id);
+        try {
+            FindJsonResponse note = findNote(id);
+            rq.setContent(note.getContent() + content);
+            rq.setVersion(note.getVersion());
+        } catch(NoteNotFoundException e) {
+            rq.setContent(content);
+        }
+        dbServiceClient.saveJson(rq);
+    }
+
+    public FindJsonResponse findNote(String id) {
         FindJsonRequest rq = new FindJsonRequest();
         rq.setId(id);
-        FindJsonResponse rs = dbServiceClient.findJson(rq);
-        return rs.getContent();
+        return dbServiceClient.findJson(rq);
     }
 }

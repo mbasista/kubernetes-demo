@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.client.support.interceptor.ClientInterceptor;
 
 @Configuration
 public class DbServiceConfig {
@@ -14,6 +15,8 @@ public class DbServiceConfig {
     @Bean
     public DbServiceClient dbServiceClient(Jaxb2Marshaller marshaller) {
         DbServiceClient client = new DbServiceClient();
+        ClientInterceptor[] interceptors = {new SoapFaultInterceptor()};
+        client.setInterceptors(interceptors);
         client.setDefaultUri(defaultUri);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);
