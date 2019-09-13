@@ -16,7 +16,7 @@ public class NoteController {
 
     @GetMapping("/{id}")
     public String readNote(@PathVariable("id") final String id) {
-        return noteService.findNote(id).getContent();
+        return noteService.findNoteByPlainId(id).getContent();
     }
 
     @PostMapping

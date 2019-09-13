@@ -1,19 +1,20 @@
 package pl.demo.dbservice;
 
+import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
-import kdemo.FindJsonResponse;
-import kdemo.FindJsonRequest;
-import kdemo.SaveJsonResponse;
-import kdemo.SaveJsonRequest;
+import pl.demo.dbservice.exceptions.ConcurrentModificationException;
+import pl.demo.dbservice.exceptions.RecordNotFoundException;
+import pl.demo.dbservice.gen.*;
 
 @Endpoint
 public class ContentEndpoint {
 
-    private final static String NAMESPACE_URI = "kdemo";
+    private final static String NAMESPACE_URI = "demo.pl/dbservice/gen";
 
     private ContentRepository contentRepository;
 
@@ -23,20 +24,28 @@ public class ContentEndpoint {
     }
 
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "findJsonRequest")
-    public @ResponsePayload FindJsonResponse findJsonById(@RequestPayload FindJsonRequest rq) {
+    public @ResponsePayload
+    FindJsonResponse findJsonById(@RequestPayload FindJsonRequest rq) throws RecordNotFoundException {
         FindJsonResponse rs = new FindJsonResponse();
-        String content = contentRepository.findById(rq.getId())
-                .map(JsonContent::getContent)
+        JsonContent jsonContent = contentRepository
+                .findById(rq.getId())
                 .orElseThrow(RecordNotFoundException::new);
-        rs.setContent(content);
+        rs.setContent(jsonContent.getContent());
+        rs.setVersion(jsonContent.getVersion());
         return rs;
     }
 
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "saveJsonRequest")
-    public @ResponsePayload SaveJsonResponse saveJson(@RequestPayload SaveJsonRequest rq) {
+    public @ResponsePayload
+    SaveJsonResponse saveJson(@RequestPayload SaveJsonRequest rq) throws ConcurrentModificationException {
         SaveJsonResponse rs = new SaveJsonResponse();
-        Long id = contentRepository.save(new JsonContent(rq.getContent())).getId();
-        rs.setId(id);
+        try {
+            JsonContent jsonContent = new JsonContent(rq.getId(), rq.getContent(), rq.getVersion());
+            jsonContent = contentRepository.save(jsonContent);
+            rs.setId(jsonContent.getId());
+        } catch(ObjectOptimisticLockingFailureException e) {
+            throw new ConcurrentModificationException();
+        }
         return rs;
     }
 }

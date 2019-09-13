@@ -2,9 +2,9 @@ server:
   port: 8765
 
 db_host: localhost
-db_username: dbadmin
+db_username: admin
 db_password: Zaq123@!
-db_name: defaultdb
+db_name: kdemo
 
 spring:
   datasource:

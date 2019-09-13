@@ -13,18 +13,24 @@ import pl.demo.noteservice.generated.dbservice.wsdl.SaveJsonRequest;
 public class NoteService {
 
     private final DbServiceClient dbServiceClient;
+    private final HashingService hashingService;
+    private final BlockchainAlgorithm blockchainAlgorithm;
+    private final TreeConverter treeConverter;
 
     @Autowired
-    public NoteService(DbServiceClient dbServiceClient) {
+    public NoteService(DbServiceClient dbServiceClient, HashingService hashingService, BlockchainAlgorithm blockchainAlgorithm, TreeConverter treeConverter) {
         this.dbServiceClient = dbServiceClient;
+        this.hashingService = hashingService;
+        this.blockchainAlgorithm = blockchainAlgorithm;
+        this.treeConverter = treeConverter;
     }
 
-    public String saveNote(String content) {
-        String noteId = getNoteId(content);
+    public String saveNote(String note) {
+        String noteId = getNoteId(note);
         try {
-            saveNote(noteId, content);
+            saveNote(noteId, note);
         } catch (ConcurrentModificationException e) {
-            saveNote(noteId, content);
+            saveNote(note);
         }
         return noteId;
     }
@@ -38,22 +44,33 @@ public class NoteService {
         }
     }
 
-    private void saveNote(String id, String content) {
+    private void saveNote(String id, String newContent) {
         SaveJsonRequest rq = new SaveJsonRequest();
-        rq.setId(id);
+        rq.setId(hashingService.sha256(id));
         try {
-            FindJsonResponse note = findNote(id);
-            rq.setContent(note.getContent() + content);
-            rq.setVersion(note.getVersion());
+            FindJsonResponse existingNote = findNoteByPlainId(id);
+            rq.setContent(updateContent(existingNote.getContent(), id, newContent));
+            rq.setVersion(existingNote.getVersion());
         } catch(NoteNotFoundException e) {
-            rq.setContent(content);
+            rq.setContent(createContent(id, newContent));
         }
         dbServiceClient.saveJson(rq);
     }
 
-    public FindJsonResponse findNote(String id) {
+    private String updateContent(String currentTree, String id, String newValue) {
+        Tree tree = treeConverter.jsonToTree(currentTree);
+        tree = blockchainAlgorithm.addNoteToTree(tree, id, newValue);
+        return treeConverter.treeToJson(tree);
+    }
+
+    private String createContent(String id, String content) {
+        Tree tree = blockchainAlgorithm.createTree(id, content);
+        return treeConverter.treeToJson(tree);
+    }
+
+    public FindJsonResponse findNoteByPlainId(String id) {
         FindJsonRequest rq = new FindJsonRequest();
-        rq.setId(id);
+        rq.setId(hashingService.sha256(id));
         return dbServiceClient.findJson(rq);
     }
 }

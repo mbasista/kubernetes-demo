@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="kdemo"
-           targetNamespace="kdemo" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="demo.pl/dbservice/gen"
+           xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+           targetNamespace="demo.pl/dbservice/gen" elementFormDefault="qualified">
 
     <xs:element name="saveJsonRequest">
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="id" type="xs:string"/>
                 <xs:element name="content" type="xs:string"/>
+                <xs:element name="version" type="xs:long"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -13,7 +16,9 @@
     <xs:element name="saveJsonResponse">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="id" type="xs:long"/>
+                <xs:element name="id" type="xs:string"/>
+                <xs:element name="content" type="xs:string"/>
+                <xs:element name="version" type="xs:long"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -21,7 +26,7 @@
     <xs:element name="findJsonRequest">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="id" type="xs:long"/>
+                <xs:element name="id" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -29,8 +34,18 @@
     <xs:element name="findJsonResponse">
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="id" type="xs:string"/>
                 <xs:element name="content" type="xs:string"/>
+                <xs:element name="version" type="xs:long"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
+    <xs:simpleType name="FailureStatus">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ENTRY_NOT_FOUND"/>
+            <xs:enumeration value="CONCURRENT_MODIFICATION"/>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>
