@@ -2,6 +2,7 @@ package pl.demo.dbservice;
 
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
@@ -43,7 +44,7 @@ public class ContentEndpoint {
             JsonContent jsonContent = new JsonContent(rq.getId(), rq.getContent(), rq.getVersion());
             jsonContent = contentRepository.save(jsonContent);
             rs.setId(jsonContent.getId());
-        } catch(ObjectOptimisticLockingFailureException e) {
+        } catch(ObjectOptimisticLockingFailureException | DataIntegrityViolationException e) {
             throw new ConcurrentModificationException();
         }
         return rs;
