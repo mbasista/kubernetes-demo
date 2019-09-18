@@ -25,4 +25,15 @@ spec:
           envFrom:
           - configMapRef:
               name: {{ $.Values.application.name }}-config
+          resources:
+            requests:
+              cpu: {{ $.Values.deployment.resources.requests.cpu }}
+            limits:
+              cpu: {{ $.Values.deployment.resources.limits.cpu }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ $.Values.application.port }}
+              initialDelaySeconds: 45
+              periodSeconds: 10
 {{- end }}

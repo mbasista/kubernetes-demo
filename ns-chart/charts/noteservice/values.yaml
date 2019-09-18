@@ -4,8 +4,13 @@ application:
 
 image: 
   name: besanouno/kdemo-noteservice
-  tag: "2.0"
+  tag: "2.4"
 
 deployment:
-  replicas: 3
+  replicas: 1
   restartPolicy: Always
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      cpu: 500m
